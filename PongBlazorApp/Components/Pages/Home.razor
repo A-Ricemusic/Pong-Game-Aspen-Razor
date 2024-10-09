@@ -23,8 +23,11 @@
         {
             // Focus the canvas so it can capture key events
             await JSRuntime.InvokeVoidAsync("setFocus", "pongCanvas");
+
+            // Draw the initial game state
             await DrawGame();
 
+            // Start the game loop if not already running
             if (!isGameRunning)
             {
                 isGameRunning = true;
@@ -66,16 +69,13 @@
 
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
+        // Handle paddle movement
         if (e.Key == "ArrowLeft")
             paddleX -= 20;
         if (e.Key == "ArrowRight")
             paddleX += 20;
 
+        // Redraw after moving the paddle
         await DrawGame();
-    }
-
-    private async Task SubmitHighScore(int score)
-    {
-        var response = await Http.PostAsJsonAsync("https://your-aspen-api/highscore", new { score });
     }
 }
