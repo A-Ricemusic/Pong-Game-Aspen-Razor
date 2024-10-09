@@ -1,6 +1,73 @@
 ﻿@page "/"
+@inject IJSRuntime JSRuntime
+@inject HttpClient Http
 
 <PageTitle>Home</PageTitle>
 
-<canvas id="pongCanvas" width="800" height="600"></canvas>
+<h3>Home</h3>
+
+<!-- Canvas for the Pong game -->
+<canvas id="pongCanvas" width="800" height="600" tabindex="1" @onkeydown="OnKeyDown"></canvas>
+
+@code {
+    private int paddleX = 100;
+    private int paddleY = 500;
+    private int ballX = 400;
+    private int ballY = 300;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await DrawGame();
+            await GameLoop(); // Start the game loop
+        }
+    }
+
+    private async Task DrawGame()
+    {
+        await JSRuntime.InvokeVoidAsync("clearCanvas");
+        await JSRuntime.InvokeVoidAsync("drawPaddle", paddleX, paddleY, 100, 20);
+        await JSRuntime.InvokeVoidAsync("drawBall", ballX, ballY, 10);
+    }
+
+    private int ballSpeedX = 2;
+    private int ballSpeedY = 2;
+
+    private async Task GameLoop()
+    {
+        while (true)
+        {
+            // Move the ball
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Detect collisions with walls
+            if (ballX <= 0 || ballX >= 800) ballSpeedX = -ballSpeedX;
+            if (ballY <= 0 || ballY >= 600) ballSpeedY = -ballSpeedY;
+
+            // Detect collisions with paddles (add paddle collision logic here)
+
+            await DrawGame();
+            await Task.Delay(16); // roughly 60 FPS
+        }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "ArrowLeft")
+            paddleX -= 20;
+        if (e.Key == "ArrowRight")
+            paddleX += 20;
+
+        await DrawGame();
+    }
+
+    private async Task SubmitHighScore(int score)
+    {
+        var response = await Http.PostAsJsonAsync("https://your-aspen-api/highscore", new { score });
+    }
+}
+
+
 
