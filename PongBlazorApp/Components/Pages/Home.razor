@@ -15,17 +15,27 @@
     private int ballX = 400;
     private int ballY = 300;
 
+    private bool isGameRunning = false;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            // Focus the canvas so it can capture key events
+            await JSRuntime.InvokeVoidAsync("setFocus", "pongCanvas");
             await DrawGame();
-            await GameLoop(); // Start the game loop
+
+            if (!isGameRunning)
+            {
+                isGameRunning = true;
+                await GameLoop(); // Start the game loop
+            }
         }
     }
 
     private async Task DrawGame()
     {
+        // Ensure JS functions are available for rendering
         await JSRuntime.InvokeVoidAsync("clearCanvas");
         await JSRuntime.InvokeVoidAsync("drawPaddle", paddleX, paddleY, 100, 20);
         await JSRuntime.InvokeVoidAsync("drawBall", ballX, ballY, 10);
@@ -36,7 +46,7 @@
 
     private async Task GameLoop()
     {
-        while (true)
+        while (isGameRunning)
         {
             // Move the ball
             ballX += ballSpeedX;
@@ -46,8 +56,11 @@
             if (ballX <= 0 || ballX >= 800) ballSpeedX = -ballSpeedX;
             if (ballY <= 0 || ballY >= 600) ballSpeedY = -ballSpeedY;
 
+            // Redraw the game
             await DrawGame();
-            await Task.Delay(16); // roughly 60 FPS
+
+            // Pause briefly before the next frame (approximately 60 FPS)
+            await Task.Delay(16);
         }
     }
 
