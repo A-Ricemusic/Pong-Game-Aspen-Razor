@@ -46,8 +46,6 @@
             if (ballX <= 0 || ballX >= 800) ballSpeedX = -ballSpeedX;
             if (ballY <= 0 || ballY >= 600) ballSpeedY = -ballSpeedY;
 
-            // Detect collisions with paddles (add paddle collision logic here)
-
             await DrawGame();
             await Task.Delay(16); // roughly 60 FPS
         }
@@ -68,6 +66,3 @@
         var response = await Http.PostAsJsonAsync("https://your-aspen-api/highscore", new { score });
     }
 }
-
-
-
