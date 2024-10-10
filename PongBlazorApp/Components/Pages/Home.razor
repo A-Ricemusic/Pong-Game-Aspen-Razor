@@ -1,81 +1,114 @@
 ﻿@page "/"
-@inject IJSRuntime JSRuntime
-@inject HttpClient Http
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Pong Game</PageTitle>
 
-<h3>Home</h3>
+<h3>Blazor Pong Game</h3>
 
 <!-- Canvas for the Pong game -->
-<canvas id="pongCanvas" width="800" height="600" tabindex="1" @onkeydown="OnKeyDown"></canvas>
+<canvas id="pongCanvas" width="800" height="600" tabindex="1" style="border: 1px solid black;"></canvas>
 
-@code {
-    private int paddleX = 100;
-    private int paddleY = 500;
-    private int ballX = 400;
-    private int ballY = 300;
+<script>
+    // Get the canvas element and its 2D context
+    const canvas = document.getElementById('pongCanvas');
+    const ctx = canvas.getContext('2d');
 
-    private bool isGameRunning = false;
+    // Define the paddle
+    const paddleHeight = 10;
+    const paddleWidth = 75;
+    let paddleX = (canvas.width - paddleWidth) / 2;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // Focus the canvas so it can capture key events
-            await JSRuntime.InvokeVoidAsync("setFocus", "pongCanvas");
+    // Define the ball
+    let ballRadius = 10;
+    let ballX = canvas.width / 2;
+    let ballY = canvas.height - 30;
+    let ballSpeedX = 2;
+    let ballSpeedY = -2;
 
-            // Draw the initial game state
-            await DrawGame();
+    // Keyboard controls
+    let rightPressed = false;
+    let leftPressed = false;
 
-            // Start the game loop if not already running
-            if (!isGameRunning)
-            {
-                isGameRunning = true;
-                await GameLoop(); // Start the game loop
+    // Add event listeners for key presses
+    document.addEventListener('keydown', keyDownHandler, false);
+    document.addEventListener('keyup', keyUpHandler, false);
+
+    function keyDownHandler(e) {
+        if (e.key == "Right" || e.key == "ArrowRight") {
+            rightPressed = true;
+        } else if (e.key == "Left" || e.key == "ArrowLeft") {
+            leftPressed = true;
+        }
+    }
+
+    function keyUpHandler(e) {
+        if (e.key == "Right" || e.key == "ArrowRight") {
+            rightPressed = false;
+        } else if (e.key == "Left" || e.key == "ArrowLeft") {
+            leftPressed = false;
+        }
+    }
+
+    // Draw the paddle
+    function drawPaddle() {
+        ctx.beginPath();
+        ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    // Draw the ball
+    function drawBall() {
+        ctx.beginPath();
+        ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    // Draw the game on every frame
+    function draw() {
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw the ball and paddle
+        drawBall();
+        drawPaddle();
+
+        // Ball movement
+        ballX += ballSpeedX;
+        ballY += ballSpeedY;
+
+        // Ball collision with walls
+        if (ballX + ballSpeedX > canvas.width - ballRadius || ballX + ballSpeedX < ballRadius) {
+            ballSpeedX = -ballSpeedX;
+        }
+        if (ballY + ballSpeedY < ballRadius) {
+            ballSpeedY = -ballSpeedY;
+        } else if (ballY + ballSpeedY > canvas.height - ballRadius) {
+            if (ballX > paddleX && ballX < paddleX + paddleWidth) {
+                ballSpeedY = -ballSpeedY;
+            } else {
+                // Game over, reset the ball
+                ballX = canvas.width / 2;
+                ballY = canvas.height - 30;
+                ballSpeedX = 2;
+                ballSpeedY = -2;
+                paddleX = (canvas.width - paddleWidth) / 2;
             }
         }
-    }
 
-    private async Task DrawGame()
-    {
-        // Ensure JS functions are available for rendering
-        await JSRuntime.InvokeVoidAsync("clearCanvas");
-        await JSRuntime.InvokeVoidAsync("drawPaddle", paddleX, paddleY, 100, 20);
-        await JSRuntime.InvokeVoidAsync("drawBall", ballX, ballY, 10);
-    }
-
-    private int ballSpeedX = 2;
-    private int ballSpeedY = 2;
-
-    private async Task GameLoop()
-    {
-        while (isGameRunning)
-        {
-            // Move the ball
-            ballX += ballSpeedX;
-            ballY += ballSpeedY;
-
-            // Detect collisions with walls
-            if (ballX <= 0 || ballX >= 800) ballSpeedX = -ballSpeedX;
-            if (ballY <= 0 || ballY >= 600) ballSpeedY = -ballSpeedY;
-
-            // Redraw the game
-            await DrawGame();
-
-            // Pause briefly before the next frame (approximately 60 FPS)
-            await Task.Delay(16);
+        // Paddle movement
+        if (rightPressed && paddleX < canvas.width - paddleWidth) {
+            paddleX += 7;
+        } else if (leftPressed && paddleX > 0) {
+            paddleX -= 7;
         }
+
+        // Request the next frame
+        requestAnimationFrame(draw);
     }
 
-    private async Task OnKeyDown(KeyboardEventArgs e)
-    {
-        // Handle paddle movement
-        if (e.Key == "ArrowLeft")
-            paddleX -= 20;
-        if (e.Key == "ArrowRight")
-            paddleX += 20;
-
-        // Redraw after moving the paddle
-        await DrawGame();
-    }
-}
+    // Start the game loop
+    draw();
+</script>
