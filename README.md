@@ -34,18 +34,14 @@ Copy code
 git clone https://github.com/your-username/pong-game-razor.git
 Navigate to the project directory:
 
-bash
-Copy code
+
 cd pong-game-razor
 Restore dependencies:
 
-bash
-Copy code
+
 dotnet restore
 Build and run the application:
 
-bash
-Copy code
 dotnet run
 Open a web browser and navigate to http://localhost:5000.
 
@@ -54,9 +50,6 @@ ASP.NET Core: Razor Pages for server-side rendering and routing.
 HTML5 Canvas: For rendering game graphics.
 JavaScript: For handling client-side interactions.
 CSS: For styling the game interface.
-
-
-
 Contributing
 Contributions are welcome! To contribute:
 
