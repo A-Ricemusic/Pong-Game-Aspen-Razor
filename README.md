@@ -1,4 +1,4 @@
-# Pong Gam
+# Pong Game
 
 A modern spin on the classic arcade hit, **Pong**, built with **ASP.NET Razor Pages**. Control the paddle, bounce the ball, and aim for the highest score possible—just don’t let it slip past you!
 
